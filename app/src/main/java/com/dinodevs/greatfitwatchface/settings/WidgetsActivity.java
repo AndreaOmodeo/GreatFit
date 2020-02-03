@@ -66,11 +66,18 @@ public class WidgetsActivity extends FragmentActivity {
     }
 
     private String prepareTitle(String title){
-        if(title.equals("altitude")){
-            title = "altitude/Dive";
-        }else if(title.equals("weather_img")){
-            title = "weather icon";
+        switch (title) {
+            case "altitude":
+                title = "altitude/Dive";
+                break;
+            case "weather_img":
+                title = "weather icon";
+                break;
+            case "min_max_temperatures":
+                title = "Max/Min temperatures";
+                break;
         }
+
         // Replace _ with spaces
         title = title.replaceAll("_"," ");
         // Capitalize first letter
@@ -88,6 +95,7 @@ public class WidgetsActivity extends FragmentActivity {
                 break;
             case "phone_battery":
             case "phone_alarm":
+            case "notifications":
                 subtitle = getString(R.string.needAmazmod);
                 break;
             case "xdrip":
@@ -102,6 +110,9 @@ public class WidgetsActivity extends FragmentActivity {
             case "today_distance":
                 subtitle = getString(R.string.todaySportDistance);
                 break;
+            case "walked_distance":
+                subtitle = getString(R.string.basedOnHeight);
+                break;
             case "heart_rate":
                 subtitle = getString(R.string.needsContinueHeartRate);
                 break;
@@ -110,9 +121,6 @@ public class WidgetsActivity extends FragmentActivity {
                 break;
             case "watch_alarm":
                 subtitle = getString(R.string.nextWatchAlarm);
-                break;
-            case "notifications":
-                subtitle = getString(R.string.needAmazmod);
                 break;
         }
 

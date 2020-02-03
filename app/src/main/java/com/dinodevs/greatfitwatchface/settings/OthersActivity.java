@@ -2,20 +2,29 @@ package com.dinodevs.greatfitwatchface.settings;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.FragmentActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.view.View;
 import android.widget.CompoundButton;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.dinodevs.greatfitwatchface.R;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class OthersActivity extends FragmentActivity {
+    public final String[] BUILD_VERGE_MODELS = {"qogir", "qogirUS"};
+    public boolean isVerge(){
+        return Arrays.asList(BUILD_VERGE_MODELS).contains(Build.PRODUCT);
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -36,6 +45,14 @@ public class OthersActivity extends FragmentActivity {
             }
         }, better_resolution_when_raising_hand));
 
+        final boolean white_bg = sharedPreferences.getBoolean( "white_bg", getResources().getBoolean(R.bool.white_bg));
+        settings.add(new SwitchSetting(null, "White background", "Theme with white bg - black text/icons", new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                sharedPreferences.edit().putBoolean( "white_bg", b).apply();
+            }
+        }, white_bg));
+
         final boolean analog_clock = sharedPreferences.getBoolean( "analog_clock", getResources().getBoolean(R.bool.analog_clock));
         settings.add(new SwitchSetting(null, "Analog clock", "Show clock time hands", new CompoundButton.OnCheckedChangeListener() {
             @Override
@@ -52,7 +69,7 @@ public class OthersActivity extends FragmentActivity {
             }
         }, digital_clock));
 
-        final boolean clock_only_slpt = sharedPreferences.getBoolean( "clock_only_slpt", getResources().getBoolean(R.bool.clock_only_slpt));
+        final boolean clock_only_slpt = sharedPreferences.getBoolean( "clock_only_slpt", isVerge() || getResources().getBoolean(R.bool.clock_only_slpt));
         settings.add(new SwitchSetting(null, "SLPT clock only", "Show only clock when screen is off", new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
@@ -133,20 +150,35 @@ public class OthersActivity extends FragmentActivity {
         }, am_pm_always));
 
         final int target_calories = sharedPreferences.getInt( "target_calories", 1000);
-        settings.add(new SeekbarSetting(null, "Target calories", null, new SeekBar.OnSeekBarChangeListener() {
-            @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                sharedPreferences.edit().putInt( "target_calories", progress).apply();
-            }
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                Toast.makeText(seekBar.getContext(), "Target: "+seekBar.getProgress(), Toast.LENGTH_SHORT).show();
-            }
-        }, target_calories, 3000));
+        settings.add(
+                new IncrementalSetting(null, "Target calories", "Current: "+target_calories,
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                int new_value = sharedPreferences.getInt( "target_calories", 1000)-50;
+                                if(new_value>=100) {
+                                    sharedPreferences.edit().putInt("target_calories", new_value).apply();
+                                    View parent = (View) view.getParent();
+                                    TextView value = (TextView) parent.findViewById(R.id.value);
+                                    value.setText(new_value+"");
+                                }
+                            }
+                        },new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        int new_value = sharedPreferences.getInt( "target_calories", 1000)+50;
+                        if(new_value<=10000) {
+                            sharedPreferences.edit().putInt("target_calories", new_value).apply();
+                            View parent = (View) view.getParent();
+                            TextView value = (TextView) parent.findViewById(R.id.value);
+                            value.setText(new_value+"");
+                        }
+                    }
+                }, target_calories+""
+                )
+        );
 
+        /*
         final int custom_refresh_rate = sharedPreferences.getInt( "custom_refresh_rate", getResources().getInteger(R.integer.custom_refresh_rate)*1000);
         settings.add(new SeekbarSetting(null, "Air pressure refresh sec", null, new SeekBar.OnSeekBarChangeListener() {
             @Override
@@ -161,21 +193,101 @@ public class OthersActivity extends FragmentActivity {
                 Toast.makeText(seekBar.getContext(), "Refresh rate: "+seekBar.getProgress()+" sec", Toast.LENGTH_SHORT).show();
             }
         }, custom_refresh_rate, 60));
+         */
 
-        final float world_time_zone = sharedPreferences.getFloat( "world_time_zone", -1f);
-        settings.add(new SeekbarSetting(null, "Second time difference", "Current: "+world_time_zone+" hours", new SeekBar.OnSeekBarChangeListener() {
+        final int custom_refresh_rate = sharedPreferences.getInt( "custom_refresh_rate", getResources().getInteger(R.integer.custom_refresh_rate)*1000);
+        settings.add(
+                new IncrementalSetting(null, "Custom refresh", "Pressure/Walked distance: "+((custom_refresh_rate/1000<120)?Math.round(custom_refresh_rate/1000)+" sec":Math.round(custom_refresh_rate/1000)/60+" min"),
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                int new_value = Math.round(sharedPreferences.getInt( "custom_refresh_rate", getResources().getInteger(R.integer.custom_refresh_rate)*1000)/1000-5);
+                                if(new_value>115)
+                                    new_value = new_value - 55;
+                                if(new_value>=0) {
+                                    sharedPreferences.edit().putInt("custom_refresh_rate", new_value*1000).apply();
+                                    View parent = (View) view.getParent();
+                                    TextView value = (TextView) parent.findViewById(R.id.value);
+                                    value.setText((new_value<120)?new_value+" sec":new_value/60+" min");
+                                }
+                            }
+                        },new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        int new_value = Math.round(sharedPreferences.getInt( "custom_refresh_rate", getResources().getInteger(R.integer.custom_refresh_rate)*1000)/1000+5);
+                        if(new_value>120)
+                            new_value = new_value + 55;
+                        sharedPreferences.edit().putInt("custom_refresh_rate", new_value*1000).apply();
+                        View parent = (View) view.getParent();
+                        TextView value = (TextView) parent.findViewById(R.id.value);
+                        value.setText((new_value<120)?new_value+" sec":new_value/60+" min");
+                    }
+                }, (custom_refresh_rate/1000<120)?Math.round(custom_refresh_rate/1000)+" sec":Math.round(custom_refresh_rate/1000)/60+" min")
+        );
+
+        final boolean pressure_to_mmhg = sharedPreferences.getBoolean( "pressure_to_mmhg", getResources().getBoolean(R.bool.pressure_to_mmhg));
+        settings.add(new SwitchSetting(null, "Pressure units", "(off: hPa, on: mmHg)", new CompoundButton.OnCheckedChangeListener() {
             @Override
-            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                sharedPreferences.edit().putFloat( "world_time_zone", progress/2f-12).apply();
+            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
+                sharedPreferences.edit().putBoolean( "pressure_to_mmhg", b).apply();
             }
-            @Override
-            public void onStartTrackingTouch(SeekBar seekBar) {
-            }
-            @Override
-            public void onStopTrackingTouch(SeekBar seekBar) {
-                Toast.makeText(seekBar.getContext(), "Time diff: "+(seekBar.getProgress()/2f-12)+" hours", Toast.LENGTH_SHORT).show();
-            }
-        }, (int) (world_time_zone+12)*2, 47));
+        }, pressure_to_mmhg));
+
+        final float world_time_zone = sharedPreferences.getFloat( "world_time_zone", 0f);
+        settings.add(
+                new IncrementalSetting(null, "World-time zone", "Current: GMT "+((world_time_zone > 0) ? "+" + world_time_zone : world_time_zone),
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                float new_value = sharedPreferences.getFloat( "world_time_zone", 0)-0.5f;
+                                if(new_value>=-12) {
+                                    sharedPreferences.edit().putFloat("world_time_zone", new_value).apply();
+                                    View parent = (View) view.getParent();
+                                    TextView value = (TextView) parent.findViewById(R.id.value);
+                                    value.setText("GMT " + ((new_value > 0) ? "+" + new_value : new_value));
+                                }
+                            }
+                        },new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        float new_value = sharedPreferences.getFloat( "world_time_zone", 0)+0.5f;
+                        if(new_value<=12) {
+                            sharedPreferences.edit().putFloat("world_time_zone", new_value).apply();
+                            View parent = (View) view.getParent();
+                            TextView value = (TextView) parent.findViewById(R.id.value);
+                            value.setText("GMT " + ((new_value > 0) ? "+" + new_value : new_value));
+                        }
+                    }
+                }, "GMT " + ((world_time_zone > 0) ? "+" + world_time_zone : world_time_zone))
+        );
+
+        final int height = sharedPreferences.getInt( "height", 175);
+        settings.add(
+                new IncrementalSetting(null, "Set height", "Current: "+height+" cm",
+                        new View.OnClickListener() {
+                            @Override
+                            public void onClick(View view) {
+                                int new_value = sharedPreferences.getInt( "height", 175)-1;
+                                if(new_value>=100) {
+                                    sharedPreferences.edit().putInt("height", new_value).apply();
+                                    View parent = (View) view.getParent();
+                                    TextView value = (TextView) parent.findViewById(R.id.value);
+                                    value.setText(new_value+" cm");
+                                }
+                            }
+                        },new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        int new_value = sharedPreferences.getInt( "height", 175)+1;
+                        if(new_value<=250) {
+                            sharedPreferences.edit().putInt("height", new_value).apply();
+                            View parent = (View) view.getParent();
+                            TextView value = (TextView) parent.findViewById(R.id.value);
+                            value.setText(new_value + " cm");
+                        }
+                    }
+                }, height+" cm")
+        );
 
         //Setup layout
         root.setBackgroundResource(R.drawable.settings_background);

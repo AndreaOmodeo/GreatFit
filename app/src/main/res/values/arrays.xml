@@ -4,8 +4,8 @@
     <!-- Constant Elements -->
     <array name="hours">
         <item name="font_size">190px</item> <!-- font size -->
-        <item name="left">108px</item> <!-- position top -->
-        <item name="top">226px</item> <!-- position left -->
+        <item name="left">108px</item> <!-- position left -->
+        <item name="top">226px</item> <!-- position top -->
         <item name="color">#ff0000</item> <!-- color -->
         <item name="align_left">false</item> <!-- align left -->
     </array>
@@ -31,7 +31,7 @@
        <item name="color">#fff</item>
        <item name="align_left">false</item> <!-- not supported -->
     </array>
-    <!-- NOT SUPPORTED YET
+    <!--
     <array name="analog_hours">
         <item name="image">@drawable/hours</item> rotating img
         <item name="left">160px</item> position top
@@ -90,8 +90,8 @@
     <integer-array name="widgets">
         <item>2</item> <!-- Widget 1: type from "supported widgets" list -->
         <item>1</item> <!-- Widget 2: type from "supported widgets" list -->
-        <item>18</item>
-        <item>7</item>
+        <item>20</item>
+        <item>8</item>
         <item>24</item>
     </integer-array>
 
@@ -267,9 +267,11 @@
         <item>heart_rate</item>
         <item>total_distance</item>
         <item>today_distance</item>
+        <item>walked_distance</item>
         <item>floors</item>
         <item>battery_percent</item>
         <item>temperature</item>
+        <item>min_max_temperatures</item>
         <item>weather_img</item>
         <item>city</item>
         <item>humidity</item>
@@ -287,7 +289,7 @@
         <item>world_time</item>
         <item>notifications</item>
         <item>moonphase</item>
-        <item>none</item> <!-- 24 -->
+        <item>none</item> <!-- 26 -->
     </string-array>
 
     <!-- Supported Progress Elements -->
@@ -336,6 +338,7 @@
         <item>@string/Chinese</item>
         <item>@string/Croatian</item>
         <item>@string/Czech</item>
+        <item>@string/Danish</item>
         <item>@string/Dutch</item>
         <item>@string/French</item>
         <item>@string/German</item>
@@ -353,6 +356,7 @@
         <item>@string/Spanish</item>
         <item>@string/Thai</item>
         <item>@string/Turkish</item>
+        <item>@string/Vietnamese</item>
     </string-array>
     <string-array name="languages_EN">
         <item>English</item>
@@ -360,6 +364,7 @@
         <item>Chinese</item>
         <item>Croatian</item>
         <item>Czech</item>
+        <item>Danish</item>
         <item>Dutch</item>
         <item>French</item>
         <item>German</item>
@@ -377,6 +382,7 @@
         <item>Spanish</item>
         <item>Thai</item>
         <item>Turkish</item>
+        <item>Vietnamese</item>
     </string-array>
 
     <!--

@@ -3,9 +3,11 @@ package com.dinodevs.greatfitwatchface.widget;
 import android.app.Service;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.provider.Settings;
 import android.text.TextPaint;
 import android.util.Log;
 import android.widget.Toast;
@@ -43,12 +45,13 @@ import java.util.List;
 
 import com.dinodevs.greatfitwatchface.R;
 import com.dinodevs.greatfitwatchface.resource.ResourceManager;
+import com.ingenic.iwds.slpt.view.sport.SlptSportUtil;
 import com.ingenic.iwds.slpt.view.utils.SimpleFile;
 
 
 public class MainClock extends DigitalClockWidget {
 
-    private TextPaint hourFont, minutesFont, secondsFont, indicatorFont, dateFont, dayFont, weekdayFont, monthFont, yearFont;
+    private TextPaint hourFont, minutesFont, secondsFont, indicatorFont, dateFont, dayFont, weekdayFont, monthFont, yearFont, ampmFont;
     private Bitmap dateIcon, hourHand, minuteHand, secondsHand, background;
 
     private String[] digitalNums = {"0", "1", "2", "3", "4", "5", "6", "7", "8", "9"};
@@ -56,113 +59,122 @@ public class MainClock extends DigitalClockWidget {
 
     // Languages
     public static String[] codes = {
-            "English", "Български", "中文", "Hrvatski", "Czech", "Nederlands", "Français", "Deutsch", "Ελληνικά", "עברית", "Magyar", "Italiano", "日本語", "한국어", "Polski", "Português", "Română", "Русский", "Slovenčina", "Español", "ไทย", "Türkçe"
+            "English", "Български", "中文", "Hrvatski", "Czech", "Dansk", "Nederlands", "Français", "Deutsch", "Ελληνικά", "עברית", "Magyar", "Italiano", "日本語", "한국어", "Polski", "Português", "Română", "Русский", "Slovenčina", "Español", "ไทย", "Türkçe", "Tiếng Việt"
     };
 
     private static String[][] days = {
             //{"SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"},
-            {"SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"},
-            {"ПОНЕДЕЛНИК", "ВТОРНИК", "СРЯДА", "ЧЕТВЪРТЪК", "ПЕТЪК", "СЪБОТА", "НЕДЕЛЯ"},
-            {"星期天", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"},
-            {"NEDJELJA", "PONEDJELJAK", "UTORAK", "SRIJEDA", "ČETVRTAK", "PETAK", "SUBOTA"},
-            {"NEDĚLE","PONDĚLÍ", "ÚTERÝ", "STŘEDA", "ČTVRTEK", "PÁTEK", "SOBOTA"},
-            {"ZONDAG", "MAANDAG", "DINSDAG", "WOENSDAG", "DONDERDAG", "VRIJDAG", "ZATERDAG"},
-            {"DIMANCHE", "LUNDI", "MARDI", "MERCREDI", "JEUDI", "VENDREDI", "SAMEDI"},
-            {"SONNTAG", "MONTAG", "DIENSTAG", "MITTWOCH", "DONNERSTAG", "FREITAG", "SAMSTAG"},
-            {"ΚΥΡΙΑΚΉ", "ΔΕΥΤΈΡΑ", "ΤΡΊΤΗ", "ΤΕΤΆΡΤΗ", "ΠΈΜΠΤΗ", "ΠΑΡΑΣΚΕΥΉ", "ΣΆΒΒΑΤΟ"},
-            {"ש'","ו'","ה'","ד'","ג'","ב'","א'"},
-            {"VASÁRNAP", "HÉTFŐ", "KEDD", "SZERDA", "CSÜTÖRTÖK", "PÉNTEK", "SZOMBAT"},
-            {"DOMENICA", "LUNEDÌ", "MARTEDÌ", "MERCOLEDÌ", "GIOVEDÌ", "VENERDÌ", "SABATO"},
-            {"日曜日", "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日"},
-            {"일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"},
-            {"NIEDZIELA", "PONIEDZIAŁEK", "WTOREK", "ŚRODA", "CZWARTEK", "PIĄTEK", "SOBOTA"},
-            {"DOMINGO", "SEGUNDA", "TERÇA", "QUARTA", "QUINTA", "SEXTA", "SÁBADO"},
-            {"DUMINICĂ", "LUNI", "MARȚI", "MIERCURI", "JOI", "VINERI", "SÂMBĂTĂ"},
-            {"ВОСКРЕСЕНЬЕ", "ПОНЕДЕЛЬНИК", "ВТОРНИК", "СРЕДА", "ЧЕТВЕРГ", "ПЯТНИЦА", "СУББОТА"},
-            {"NEDEĽA", "PONDELOK", "UTOROK", "STREDA", "ŠTVRTOK", "PIATOK", "SOBOTA"},
-            {"DOMINGO", "LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES", "SÁBADO"},
-            {"อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ุกร์", "สาร์"},
-            {"PAZAR", "PAZARTESI", "SALı", "ÇARŞAMBA", "PERŞEMBE", "CUMA", "CUMARTESI"},
+            {"SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"},     //English
+            {"НЕДЕЛЯ", "ПОНЕДЕЛНИК", "ВТОРНИК", "СРЯДА", "ЧЕТВЪРТЪК", "ПЕТЪК", "СЪБОТА"},       //Bulgarian
+            {"星期天", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"},                   //Chinese
+            {"NEDJELJA", "PONEDJELJAK", "UTORAK", "SRIJEDA", "ČETVRTAK", "PETAK", "SUBOTA"},    //Croatian
+            {"NEDĚLE","PONDĚLÍ", "ÚTERÝ", "STŘEDA", "ČTVRTEK", "PÁTEK", "SOBOTA"},              //Czech
+            {"SØNDAG","MANDAG", "TIRSDAG", "ONSDAG", "TORSDAG", "FREDAG", "LØRDAG"},            //Danish
+            {"ZONDAG", "MAANDAG", "DINSDAG", "WOENSDAG", "DONDERDAG", "VRIJDAG", "ZATERDAG"},   //Dutch
+            {"DIMANCHE", "LUNDI", "MARDI", "MERCREDI", "JEUDI", "VENDREDI", "SAMEDI"},          //French
+            {"SONNTAG", "MONTAG", "DIENSTAG", "MITTWOCH", "DONNERSTAG", "FREITAG", "SAMSTAG"},  //German
+            {"ΚΥΡΙΑΚΉ", "ΔΕΥΤΈΡΑ", "ΤΡΊΤΗ", "ΤΕΤΆΡΤΗ", "ΠΈΜΠΤΗ", "ΠΑΡΑΣΚΕΥΉ", "ΣΆΒΒΑΤΟ"},       //Greek
+            {"ש'","ו'","ה'","ד'","ג'","ב'","א'"},                                               //Hebrew
+            {"VASÁRNAP", "HÉTFŐ", "KEDD", "SZERDA", "CSÜTÖRTÖK", "PÉNTEK", "SZOMBAT"},          //Hungarian
+            {"DOMENICA", "LUNEDÌ", "MARTEDÌ", "MERCOLEDÌ", "GIOVEDÌ", "VENERDÌ", "SABATO"},     //Italian
+            {"日曜日", "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日"},                   //Japanese
+            {"일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"},                   //Korean
+            {"NIEDZIELA", "PONIEDZIAŁEK", "WTOREK", "ŚRODA", "CZWARTEK", "PIĄTEK", "SOBOTA"},   //Polish
+            {"DOMINGO", "SEGUNDA", "TERÇA", "QUARTA", "QUINTA", "SEXTA", "SÁBADO"},             //Portuguese
+            {"DUMINICĂ", "LUNI", "MARȚI", "MIERCURI", "JOI", "VINERI", "SÂMBĂTĂ"},              //Romanian
+            {"ВОСКРЕСЕНЬЕ", "ПОНЕДЕЛЬНИК", "ВТОРНИК", "СРЕДА", "ЧЕТВЕРГ", "ПЯТНИЦА", "СУББОТА"},//Russian
+            {"NEDEĽA", "PONDELOK", "UTOROK", "STREDA", "ŠTVRTOK", "PIATOK", "SOBOTA"},          //Slovak
+            {"DOMINGO", "LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES", "SÁBADO"},         //Spanish
+            {"อาทิตย์", "จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ุกร์", "สาร์"},                               //Thai
+            {"PAZAR", "PAZARTESI", "SALı", "ÇARŞAMBA", "PERŞEMBE", "CUMA", "CUMARTESI"},        //Turkish
+            {"CHỦ NHẬT","THỨ 2", "THỨ 3", "THỨ 4", "THỨ 5", "THỨ 6", "THỨ 7"}                   //Vietnamese
     };
     
     public static String[][] days_3let = {
             //{"SUNDAY", "MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY"},
-            {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"},
-            {"ПОН", "ВТО", "СРЯ", "ЧЕТ", "ПЕТ", "СЪБ", "НЕД"},
-            {"星期天", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"},
-            {"NED", "PON", "UTO", "SRI", "ČET", "PET", "SUB"},
-            {"NE", "PO", "ÚT", "ST", "ČT", "PÁ", "SO"},
-            {"ZON", "MAA", "DIN", "WOE", "DON", "VRI", "ZAT"},
-            {"DIM", "LUN", "MAR", "MER", "JEU", "VEN", "SAM"},
-            {"SO", "MO", "DI", "MI", "DO", "FR", "SA"},
-            {"ΚΥΡ", "ΔΕΥ", "ΤΡΙ", "ΤΕΤ", "ΠΕΜ", "ΠΑΡ", "ΣΑΒ"},
-            {"א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"},
-            {"VAS", "HÉT", "KED", "SZE", "CSÜ", "PÉN", "SZO"},
-            {"DOM", "LUN", "MAR", "MER", "GIO", "VEN", "SAB"},
-            {"日曜日", "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日"},
-            {"일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"},
-            {"NIE", "PON", "WTO", "ŚRO", "CZW", "PIĄ", "SOB"},
-            {"DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"},
-            {"DUM", "LUN", "MAR", "MIE", "JOI", "VIN", "SÂM"},
-            {"ВСК", "ПНД", "ВТР", "СРД", "ЧТВ", "ПТН", "СБТ"},
-            {"NED", "PON", "UTO", "STR", "ŠTV", "PIA", "SOB"},
-            {"DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"},
-            {"อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."},
-            {"PAZ", "PZT", "SAL", "ÇAR", "PER", "CUM", "CMT"},
+            {"SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"},                  //English
+            {"НЕД", "ПОН", "ВТО", "СРЯ", "ЧЕТ", "ПЕТ", "СЪБ"},                  //Bulgarian
+            {"星期天", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"},   //Chinese
+            {"NED", "PON", "UTO", "SRI", "ČET", "PET", "SUB"},                  //Croatian
+            {"NE", "PO", "ÚT", "ST", "ČT", "PÁ", "SO"},                         //Czech
+            {"SØN","MAN", "TIR", "ONS", "TOR", "FRE", "LØR"},                   //Danish
+            {"ZON", "MAA", "DIN", "WOE", "DON", "VRI", "ZAT"},                  //Dutch
+            {"DIM", "LUN", "MAR", "MER", "JEU", "VEN", "SAM"},                  //French
+            {"SO", "MO", "DI", "MI", "DO", "FR", "SA"},                         //German
+            {"ΚΥΡ", "ΔΕΥ", "ΤΡΙ", "ΤΕΤ", "ΠΕΜ", "ΠΑΡ", "ΣΑΒ"},                  //Greek
+            {"א'", "ב'", "ג'", "ד'", "ה'", "ו'", "ש'"},                         //Hebrew
+            {"VAS", "HÉT", "KED", "SZE", "CSÜ", "PÉN", "SZO"},                  //Hungarian
+            {"DOM", "LUN", "MAR", "MER", "GIO", "VEN", "SAB"},                  //Italian
+            {"日曜日", "月曜日", "火曜日", "水曜日", "木曜日", "金曜日", "土曜日"},   //Japanese
+            {"일요일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"},   //Korean
+            {"NIE", "PON", "WTO", "ŚRO", "CZW", "PIĄ", "SOB"},                  //Polish
+            {"DOM", "SEG", "TER", "QUA", "QUI", "SEX", "SÁB"},                  //Portuguese
+            {"DUM", "LUN", "MAR", "MIE", "JOI", "VIN", "SÂM"},                  //Romanian
+            {"ВСК", "ПНД", "ВТР", "СРД", "ЧТВ", "ПТН", "СБТ"},                  //Russian
+            {"NED", "PON", "UTO", "STR", "ŠTV", "PIA", "SOB"},                  //Slovak
+            {"DOM", "LUN", "MAR", "MIÉ", "JUE", "VIE", "SÁB"},                  //Spanish
+            {"อา.", "จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส."},                        //Thai
+            {"PAZ", "PZT", "SAL", "ÇAR", "PER", "CUM", "CMT"},                  //Turkish
+            {"CN","T2", "T3", "T4", "T5", "T6", "T7"}                           //Vietnamese
     };
 
     private static String[][] months = {
             //{"DECEMBER", "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"},
-            {"DECEMBER", "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"},
-            {"ДЕКЕМВРИ", "ЯНУАРИ", "ФЕВРУАРИ", "МАРТ", "АПРИЛ", "МАЙ", "ЮНИ", "ЮЛИ", "АВГУСТ", "СЕПТЕМВРИ", "ОКТОМВРИ", "НОЕМВРИ" , "ДЕКЕМВРИ"},
-            {"十二月", "一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"},
-            {"PROSINAC", "SIJEČANJ", "VELJAČA", "OŽUJAK", "TRAVANJ", "SVIBANJ", "LIPANJ", "SRPANJ", "KOLOVOZ", "RUJAN", "LISTOPAD", "STUDENI", "PROSINAC"},
-            {"PROSINEC", "LEDEN", "ÚNOR", "BŘEZEN", "DUBEN", "KVĚTEN", "ČERVEN", "ČERVENEC", "SRPEN", "ZÁŘÍ", "ŘÍJEN", "LISTOPAD", "PROSINEC"},
-            {"DECEMBER", "JANUARI", "FEBRUARI", "MAART", "APRIL", "MEI", "JUNI", "JULI", "AUGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DECEMBER"},
-            {"DÉCEMBRE", "JANVIER", "FÉVRIER", "MARS", "AVRIL", "MAI", "JUIN", "JUILLET", "AOÛT", "SEPTEMBRE", "OCTOBRE", "NOVEMBRE", "DÉCEMBRE"},
-            {"DEZEMBER", "JANUAR", "FEBRUAR", "MÄRZ", "APRIL", "MAI", "JUNI", "JULI", "AUGUST", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DEZEMBER"},
-            {"ΔΕΚΈΜΒΡΙΟΣ", "ΙΑΝΟΥΆΡΙΟΣ", "ΦΕΒΡΟΥΆΡΙΟΣ", "ΜΆΡΤΙΟΣ", "ΑΠΡΊΛΙΟΣ", "ΜΆΙΟΣ", "ΙΟΎΝΙΟΣ", "ΙΟΎΛΙΟΣ", "ΑΎΓΟΥΣΤΟΣ", "ΣΕΠΤΈΜΒΡΙΟΣ", "ΟΚΤΏΒΡΙΟΣ", "ΝΟΈΜΒΡΙΟΣ", "ΔΕΚΈΜΒΡΙΟΣ"},
-            {"דצמבר", "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"},
-            {"DECEMBER", "JANUÁR", "FEBRUÁR", "MÁRCIUS", "ÁPRILIS", "MÁJUS", "JÚNIUS", "JÚLIUS", "AUGUSZTUS", "SZEPTEMBER", "OKTÓBER", "NOVEMBER", "DECEMBER"},
-            {"DICEMBRE", "GENNAIO", "FEBBRAIO", "MARZO", "APRILE", "MAGGIO", "GIUGNO", "LUGLIO", "AGOSTO", "SETTEMBRE", "OTTOBRE", "NOVEMBRE", "DICEMBRE"},
-            {"12月", "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"},
-            {"12월", "1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"},
-            {"GRUDZIEŃ", "STYCZEŃ", "LUTY", "MARZEC", "KWIECIEŃ", "MAJ", "CZERWIEC", "LIPIEC", "SIERPIEŃ", "WRZESIEŃ", "PAŹDZIERNIK", "LISTOPAD", "GRUDZIEŃ"},
-            {"DEZEMBRO", "JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"},
-            {"DECEMBRIE", "IANUARIE", "FEBRUARIE", "MARTIE", "APRILIE", "MAI", "IUNIE", "IULIE", "AUGUST", "SEPTEMBRIE", "OCTOMBRIE", "NOIEMBRIE", "DECEMBRIE"},
-            {"ДЕКАБРЬ", "ЯНВАРЬ", "ФЕВРАЛЬ", "МАРТ", "АПРЕЛЬ", "МАЙ", "ИЮНЬ", "ИЮЛЬ", "АВГУСТ", "СЕНТЯБРЬ", "ОКТЯБРЬ", "НОЯБРЬ", "ДЕКАБРЬ"},
-            {"DECEMBER", "JANUÁR", "FEBRUÁR", "MAREC", "APRÍL", "MÁJ", "JÚN", "JÚL", "AUGUST", "SEPTEMBER", "OKTÓBER", "NOVEMBER", "DECEMBER"},
-            {"DICIEMBRE", "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"},
-            {"ันวาคม", "มกราคม", "กุมภาพันธ์", "ีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน"},
-            {"ARALıK", "OCAK", "ŞUBAT", "MART", "NISAN", "MAYıS", "HAZIRAN", "TEMMUZ", "AĞUSTOS", "EYLÜL", "EKIM", "KASıM", "ARALıK"}
+            {"DECEMBER", "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"},                               //English
+            {"ДЕКЕМВРИ", "ЯНУАРИ", "ФЕВРУАРИ", "МАРТ", "АПРИЛ", "МАЙ", "ЮНИ", "ЮЛИ", "АВГУСТ", "СЕПТЕМВРИ", "ОКТОМВРИ", "НОЕМВРИ" , "ДЕКЕМВРИ"},                                  //Bulgarian
+            {"十二月", "一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"},                                                               //Chinese
+            {"PROSINAC", "SIJEČANJ", "VELJAČA", "OŽUJAK", "TRAVANJ", "SVIBANJ", "LIPANJ", "SRPANJ", "KOLOVOZ", "RUJAN", "LISTOPAD", "STUDENI", "PROSINAC"},                       //Croatian
+            {"PROSINEC", "LEDEN", "ÚNOR", "BŘEZEN", "DUBEN", "KVĚTEN", "ČERVEN", "ČERVENEC", "SRPEN", "ZÁŘÍ", "ŘÍJEN", "LISTOPAD", "PROSINEC"},                                   //Czech
+            {"DECEMBER", "JANUAR", "FEBRUAR", "MARTS", "APRIL", "MAJ", "JUNI", "JULI", "AUGUST", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DECEMBER"},                                 //Danish
+            {"DECEMBER", "JANUARI", "FEBRUARI", "MAART", "APRIL", "MEI", "JUNI", "JULI", "AUGUSTUS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DECEMBER"},                             //Dutch
+            {"DÉCEMBRE", "JANVIER", "FÉVRIER", "MARS", "AVRIL", "MAI", "JUIN", "JUILLET", "AOÛT", "SEPTEMBRE", "OCTOBRE", "NOVEMBRE", "DÉCEMBRE"},                                //French
+            {"DEZEMBER", "JANUAR", "FEBRUAR", "MÄRZ", "APRIL", "MAI", "JUNI", "JULI", "AUGUST", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DEZEMBER"},                                  //German
+            {"ΔΕΚΈΜΒΡΙΟΣ", "ΙΑΝΟΥΆΡΙΟΣ", "ΦΕΒΡΟΥΆΡΙΟΣ", "ΜΆΡΤΙΟΣ", "ΑΠΡΊΛΙΟΣ", "ΜΆΙΟΣ", "ΙΟΎΝΙΟΣ", "ΙΟΎΛΙΟΣ", "ΑΎΓΟΥΣΤΟΣ", "ΣΕΠΤΈΜΒΡΙΟΣ", "ΟΚΤΏΒΡΙΟΣ", "ΝΟΈΜΒΡΙΟΣ", "ΔΕΚΈΜΒΡΙΟΣ"},//Greek
+            {"דצמבר", "ינואר", "פברואר", "מרץ", "אפריל", "מאי", "יוני", "יולי", "אוגוסט", "ספטמבר", "אוקטובר", "נובמבר", "דצמבר"},                                                //Hebrew
+            {"DECEMBER", "JANUÁR", "FEBRUÁR", "MÁRCIUS", "ÁPRILIS", "MÁJUS", "JÚNIUS", "JÚLIUS", "AUGUSZTUS", "SZEPTEMBER", "OKTÓBER", "NOVEMBER", "DECEMBER"},                  //Hungarian
+            {"DICEMBRE", "GENNAIO", "FEBBRAIO", "MARZO", "APRILE", "MAGGIO", "GIUGNO", "LUGLIO", "AGOSTO", "SETTEMBRE", "OTTOBRE", "NOVEMBRE", "DICEMBRE"},                      //Italian
+            {"12月", "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"},                                                                        //Japanese
+            {"12월", "1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"},                                                                        //Korean
+            {"GRUDZIEŃ", "STYCZEŃ", "LUTY", "MARZEC", "KWIECIEŃ", "MAJ", "CZERWIEC", "LIPIEC", "SIERPIEŃ", "WRZESIEŃ", "PAŹDZIERNIK", "LISTOPAD", "GRUDZIEŃ"},                  //Polish
+            {"DEZEMBRO", "JANEIRO", "FEVEREIRO", "MARÇO", "ABRIL", "MAIO", "JUNHO", "JULHO", "AGOSTO", "SETEMBRO", "OUTUBRO", "NOVEMBRO", "DEZEMBRO"},                          //Portuguese
+            {"DECEMBRIE", "IANUARIE", "FEBRUARIE", "MARTIE", "APRILIE", "MAI", "IUNIE", "IULIE", "AUGUST", "SEPTEMBRIE", "OCTOMBRIE", "NOIEMBRIE", "DECEMBRIE"},                //Romanian
+            {"ДЕКАБРЬ", "ЯНВАРЬ", "ФЕВРАЛЬ", "МАРТ", "АПРЕЛЬ", "МАЙ", "ИЮНЬ", "ИЮЛЬ", "АВГУСТ", "СЕНТЯБРЬ", "ОКТЯБРЬ", "НОЯБРЬ", "ДЕКАБРЬ"},                                    //Russian
+            {"DECEMBER", "JANUÁR", "FEBRUÁR", "MAREC", "APRÍL", "MÁJ", "JÚN", "JÚL", "AUGUST", "SEPTEMBER", "OKTÓBER", "NOVEMBER", "DECEMBER"},                                 //Slovak
+            {"DICIEMBRE", "ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"},                         //Spanish
+            {"ันวาคม", "มกราคม", "กุมภาพันธ์", "ีนาคม", "เมษายน", "พฤษภาคม", "มิถุนายน", "กรกฎาคม", "สิงหาคม", "กันยายน", "ตุลาคม", "พฤศจิกายน"},                                                 //Thai
+            {"ARALıK", "OCAK", "ŞUBAT", "MART", "NISAN", "MAYıS", "HAZIRAN", "TEMMUZ", "AĞUSTOS", "EYLÜL", "EKIM", "KASıM", "ARALıK"},                                          //Turkish
+            {"THÁNG 12", "THÁNG 1", "THÁNG 2", "THÁNG 3", "THÁNG 4", "THÁNG 5", "THÁNG 6", "THÁNG 7", "THÁNG 8", "THÁNG 9", "THÁNG 10", "THÁNG 11", "THÁNG 12"}                 //Vietnamese
     };
 
     private static String[][] months_3let = {
             //{"DECEMBER", "JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"},
-            {"DEC", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"},
-            {"ДЕК", "ЯНУ", "ФЕВ", "МАР", "АПР", "МАЙ", "ЮНИ", "ЮЛИ", "АВГ", "СЕП", "ОКТ", "НОЕ", "ДЕК"},
-            {"十二月", "一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"},
-            {"PRO", "SIJ", "VE", "OŽU", "TRA", "SVI", "LIP", "SRP", "KOL", "RUJ", "LIS", "STU", "PRO"},
-            {"PRO", "LED", "ÚNO", "BŘE", "DUB", "KVĚ", "ČER", "ČER", "SRP", "ZÁŘ", "ŘÍJ", "LIS", "PRO"},
-            {"DEC", "JAN", "FEB", "MAA", "APR", "MEI", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DEC"},
-            {"DÉC", "JAN", "FÉV", "MAR", "AVR", "MAI", "JUI", "JUI", "AOÛ", "SEP", "OCT", "NOV", "DÉC"},
-            {"DEZ", "JAN", "FEB", "MÄR", "APR", "MAI", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DEZ"},
-            {"ΔΕΚ", "ΙΑΝ", "ΦΕΒ", "ΜΑΡ", "ΑΠΡ", "ΜΑΙ", "ΙΟΥΝ", "ΙΟΥΛ", "ΑΥΓ", "ΣΕΠ", "ΟΚΤ", "ΝΟΕ", "ΔΕΚ"},
-            {"דצמ", "ינו", "פבר", "מרץ", "אפר", "מאי", "יונ", "יול", "אוג", "ספט", "אוק", "נוב", "דצמ"},
-            {"DEC", "JAN", "FEB", "MÁR", "ÁPR", "MÁJ", "JÚN", "JÚL", "AUG", "SZE", "OKT", "NOV", "DEC"},
-            {"DIC", "GEN", "FEB", "MAR", "APR", "MAG", "GIU", "LUG", "AGO", "SET", "OTT", "NOV", "DIC"},
-            {"12月", "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"},
-            {"12월", "1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"},
-            {"GRU", "STY", "LUT", "MAR", "KWI", "MAJ", "CZE", "LIP", "SIE", "WRZ", "PAŹ", "LIS", "GRU"},
-            {"DEZ", "JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"},
-            {"DEC", "IAN", "FEB", "MAR", "APR", "MAI", "IUN", "IUL", "AUG", "SEP", "OCT", "NOI", "DEC"},
-            {"ДЕК", "ЯНВ", "ФЕВ", "МАР", "АПР", "МАЙ", "ИЮН", "ИЮЛ", "АВГ", "СЕН", "ОКТ", "НОЯ", "ДЕК"},
-            {"DEC", "JAN", "FEB", "MAR", "APR", "MÁJ", "JÚN", "JÚL", "AUG", "SEP", "OKT", "NOV", "DEC"},
-            {"DIC", "ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"},
-            {"ธ.ค.", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."},
-            {"ARA", "OCA", "ŞUB", "MAR", "NIS", "MAY", "HAZ", "TEM", "AĞU", "EYL", "EKI", "KAS", "ARA"},
+            {"DEC", "JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"},            //English
+            {"ДЕК", "ЯНУ", "ФЕВ", "МАР", "АПР", "МАЙ", "ЮНИ", "ЮЛИ", "АВГ", "СЕП", "ОКТ", "НОЕ", "ДЕК"},            //Bulgarian
+            {"十二月", "一月", "二月", "三月", "四月", "五月", "六月", "七月", "八月", "九月", "十月", "十一月", "十二月"}, //Chinese
+            {"PRO", "SIJ", "VE", "OŽU", "TRA", "SVI", "LIP", "SRP", "KOL", "RUJ", "LIS", "STU", "PRO"},             //Croatian
+            {"PRO", "LED", "ÚNO", "BŘE", "DUB", "KVĚ", "ČER", "ČER", "SRP", "ZÁŘ", "ŘÍJ", "LIS", "PRO"},            //Czech
+            {"DEC", "JAN", "FEB", "MAR", "APR", "MAJ", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DEC"},            //Danish
+            {"DEC", "JAN", "FEB", "MAA", "APR", "MEI", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DEC"},            //Dutch
+            {"DÉC", "JAN", "FÉV", "MAR", "AVR", "MAI", "JUI", "JUI", "AOÛ", "SEP", "OCT", "NOV", "DÉC"},            //French
+            {"DEZ", "JAN", "FEB", "MÄR", "APR", "MAI", "JUN", "JUL", "AUG", "SEP", "OKT", "NOV", "DEZ"},            //German
+            {"ΔΕΚ", "ΙΑΝ", "ΦΕΒ", "ΜΑΡ", "ΑΠΡ", "ΜΑΙ", "ΙΟΥΝ", "ΙΟΥΛ", "ΑΥΓ", "ΣΕΠ", "ΟΚΤ", "ΝΟΕ", "ΔΕΚ"},          //Greek
+            {"דצמ", "ינו", "פבר", "מרץ", "אפר", "מאי", "יונ", "יול", "אוג", "ספט", "אוק", "נוב", "דצמ"},            //Hebrew
+            {"DEC", "JAN", "FEB", "MÁR", "ÁPR", "MÁJ", "JÚN", "JÚL", "AUG", "SZE", "OKT", "NOV", "DEC"},            //Hungarian
+            {"DIC", "GEN", "FEB", "MAR", "APR", "MAG", "GIU", "LUG", "AGO", "SET", "OTT", "NOV", "DIC"},            //Italian
+            {"12月", "1月", "2月", "3月", "4月", "5月", "6月", "7月", "8月", "9月", "10月", "11月", "12月"},            //Japanese
+            {"12월", "1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"},            //Korean
+            {"GRU", "STY", "LUT", "MAR", "KWI", "MAJ", "CZE", "LIP", "SIE", "WRZ", "PAŹ", "LIS", "GRU"},            //Polish
+            {"DEZ", "JAN", "FEV", "MAR", "ABR", "MAI", "JUN", "JUL", "AGO", "SET", "OUT", "NOV", "DEZ"},            //Portuguese
+            {"DEC", "IAN", "FEB", "MAR", "APR", "MAI", "IUN", "IUL", "AUG", "SEP", "OCT", "NOI", "DEC"},            //Romanian
+            {"ДЕК", "ЯНВ", "ФЕВ", "МАР", "АПР", "МАЙ", "ИЮН", "ИЮЛ", "АВГ", "СЕН", "ОКТ", "НОЯ", "ДЕК"},            //Russian
+            {"DEC", "JAN", "FEB", "MAR", "APR", "MÁJ", "JÚN", "JÚL", "AUG", "SEP", "OKT", "NOV", "DEC"},            //Slovak
+            {"DIC", "ENE", "FEB", "MAR", "ABR", "MAY", "JUN", "JUL", "AGO", "SEP", "OCT", "NOV", "DIC"},            //Spanish
+            {"ธ.ค.", "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."},//Thai
+            {"ARA", "OCA", "ŞUB", "MAR", "NIS", "MAY", "HAZ", "TEM", "AĞU", "EYL", "EKI", "KAS", "ARA"},            //Turkish
+            {"T12", "T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12"}                      //Vietnamese
     };
 
+    private Service mService;
     private LoadSettings settings;
 
     public MainClock(LoadSettings settings) {
@@ -173,34 +185,40 @@ public class MainClock extends DigitalClockWidget {
     public void init(Service service) {
         //this.background = service.getResources().getDrawable(R.drawable.background); //todo
         //this.background.setBounds(0, 0, 320, 300);
-        this.background = Util.decodeImage(service.getResources(),"background.png");
+        this.background = Util.decodeImage(service.getResources(),settings.is_white_bg+"background.png");
         if(settings.isVerge())
-            this.background = Bitmap.createScaledBitmap(this.background, 360, 336, true);// 336 because it is scaled from 300px and not 320px
+            this.background = Bitmap.createScaledBitmap(this.background, 360, 360, true);
 
         if(settings.digital_clock) {
             this.hourFont = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
-            this.hourFont.setTypeface(ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE));
+            this.hourFont.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
             this.hourFont.setTextSize(settings.hoursFontSize);
             this.hourFont.setColor(settings.hoursColor);
             this.hourFont.setTextAlign((settings.hoursAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER);
 
             this.minutesFont = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
-            this.minutesFont.setTypeface(ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE));
+            this.minutesFont.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
             this.minutesFont.setTextSize(settings.minutesFontSize);
             this.minutesFont.setColor(settings.minutesColor);
             this.minutesFont.setTextAlign((settings.minutesAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER);
 
             this.secondsFont = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
-            this.secondsFont.setTypeface(ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE));
+            this.secondsFont.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
             this.secondsFont.setTextSize(settings.secondsFontSize);
             this.secondsFont.setColor(settings.secondsColor);
             this.secondsFont.setTextAlign((settings.secondsAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER);
 
             this.indicatorFont = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
-            this.indicatorFont.setTypeface(ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE));
+            this.indicatorFont.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
             this.indicatorFont.setTextSize(settings.indicatorFontSize);
             this.indicatorFont.setColor(settings.indicatorColor);
             this.indicatorFont.setTextAlign((settings.indicatorAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER);
+
+            this.ampmFont = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
+            this.ampmFont.setColor(settings.am_pmColor);
+            this.ampmFont.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
+            this.ampmFont.setTextSize(settings.am_pmFontSize);
+            this.ampmFont.setTextAlign((settings.am_pmAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER);
         }
 
         if(settings.analog_clock) {
@@ -211,35 +229,35 @@ public class MainClock extends DigitalClockWidget {
 
         if(settings.date>0) {
             this.dateFont = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
-            this.dateFont.setTypeface(ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE));
+            this.dateFont.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
             this.dateFont.setTextSize(settings.dateFontSize);
             this.dateFont.setColor(settings.dateColor);
             this.dateFont.setTextAlign((settings.dateAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER);
             if (settings.dateIcon) {
-                this.dateIcon = Util.decodeImage(service.getResources(), "icons/date.png");
+                this.dateIcon = Util.decodeImage(service.getResources(), "icons/"+settings.is_white_bg+"date.png");
             }
         }
 
         this.weekdayFont = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
-        this.weekdayFont.setTypeface(ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE));
+        this.weekdayFont.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
         this.weekdayFont.setTextSize(settings.weekdayFontSize);
         this.weekdayFont.setColor(settings.weekdayColor);
         this.weekdayFont.setTextAlign( (settings.weekdayAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER );
 
         this.dayFont = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
-        this.dayFont.setTypeface(ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE));
+        this.dayFont.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
         this.dayFont.setTextSize(settings.dayFontSize);
         this.dayFont.setColor(settings.dayColor);
         this.dayFont.setTextAlign( (settings.dayAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER );
 
         this.monthFont = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
-        this.monthFont.setTypeface(ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE));
+        this.monthFont.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
         this.monthFont.setTextSize(settings.monthFontSize);
         this.monthFont.setColor(settings.monthColor);
         this.monthFont.setTextAlign( (settings.monthAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER );
 
         this.yearFont = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
-        this.yearFont.setTypeface(ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE));
+        this.yearFont.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
         this.yearFont.setTextSize(settings.yearFontSize);
         this.yearFont.setColor(settings.yearColor);
         this.yearFont.setTextAlign( (settings.yearAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER );
@@ -270,6 +288,18 @@ public class MainClock extends DigitalClockWidget {
                 if (seconds % 2 == 0 || !settings.flashing_indicator) { // Draw only on even seconds (flashing : symbol)
                     canvas.drawText(indicator, settings.indicatorLeft, settings.indicatorTop, this.indicatorFont);
                 }
+            }
+
+            // AM-PM (ONLY FOR 12h format)
+            switch (ampm) {
+                case 0:
+                    canvas.drawText("AM", this.settings.am_pmLeft, this.settings.am_pmTop, this.ampmFont);
+                    break;
+                case 1:
+                    canvas.drawText("PM", this.settings.am_pmLeft, this.settings.am_pmTop, this.ampmFont);
+                    break;
+                default:
+                    //Log.d("DinoDevs-GreatFit", "AM-PM: 24h time format is on");
             }
         }
 
@@ -320,7 +350,12 @@ public class MainClock extends DigitalClockWidget {
 
         // Draw Month
         if(settings.monthBool) {
-            String monthText = (settings.month_as_text)? ( (settings.three_letters_month_if_text)? months_3let[settings.language][month] : months[settings.language][month] ) : String.format("%02d", month) ;
+            String monthText = (settings.month_as_text)? (
+                    (settings.three_letters_month_if_text)? months_3let[settings.language][month] : months[settings.language][month]
+            ) : (
+                    (settings.no_0_on_hour_first_digit)? Integer.toString(month) : String.format("%02d", month)
+            ) ;
+
             canvas.drawText(monthText, settings.monthLeft, settings.monthTop, this.monthFont);
         }
 
@@ -330,7 +365,6 @@ public class MainClock extends DigitalClockWidget {
         }
     }
 
-
     // Screen locked/closed watch mode (Slpt mode)
     @Override
     public List<SlptViewComponent> buildSlptViewComponent(Service service) {
@@ -339,20 +373,43 @@ public class MainClock extends DigitalClockWidget {
 
     public List<SlptViewComponent> buildSlptViewComponent(Service service, boolean better_resolution) {
         better_resolution = better_resolution && settings.better_resolution_when_raising_hand;
+        // SLPT only clock
         boolean show_all = (!settings.clock_only_slpt || better_resolution);
+        // SLPT only clock white bg -> to black
+        if(!show_all && settings.isVerge() && settings.white_bg) {
+            settings.is_white_bg = "";
+            settings.hoursColor = Color.parseColor("#ffffff");
+            settings.minutesColor = Color.parseColor("#ffffff");
+            settings.am_pmColor = Color.parseColor("#ffffff");
+        }
+        this.mService = service;
 
         int tmp_left;
         List<SlptViewComponent> slpt_objects = new ArrayList<>();
 
         // Draw background image
         SlptPictureView background = new SlptPictureView();
-        background.setImagePicture(SimpleFile.readFileFromAssets(service, "background"+ ((better_resolution)?"_better":"") + ((settings.isVerge())?"_verge":"") +"_slpt.png"));
+        background.setImagePicture(SimpleFile.readFileFromAssets(service, settings.is_white_bg+"background"+ ((better_resolution)?"_better":"") + ((settings.isVerge())?"_verge":"") +"_slpt.png"));
         //Alternative way
         //background.setImagePicture(ResourceManager.getVergeImageFromAssets(settings.isVerge(), service, "background"+ ((better_resolution)?"_better":"") +"_slpt.png"));
         slpt_objects.add(background);
 
+        // Set low power icon
+        if(settings.low_power) {
+            // Draw low power icon
+            SlptPictureView lowpower = new SlptPictureView();
+            lowpower.setImagePicture(SimpleFile.readFileFromAssets(service, "slpt_battery/" + settings.is_white_bg + "low_battery.png"));
+            //lowpower.picture.setBackgroundColor(backgroundColor);
+            lowpower.setStart(
+                    (int) settings.low_powerLeft,
+                    (int) settings.low_powerTop
+            );
+            SlptSportUtil.setLowBatteryIconView(lowpower);
+            slpt_objects.add(lowpower);
+        }
+
         // Set font
-        Typeface timeTypeFace = ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE);
+        Typeface timeTypeFace = ResourceManager.getTypeFace(service.getResources(), settings.font);
 
         if(settings.digital_clock) {
             // Draw hours
@@ -450,7 +507,7 @@ public class MainClock extends DigitalClockWidget {
                 secondsLayout.setTextAttrForAll(
                         settings.secondsFontSize,
                         settings.secondsColor,
-                        ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE)
+                        ResourceManager.getTypeFace(service.getResources(), settings.font)
                 );
                 // Position based on screen on
                 secondsLayout.alignX = 2;
@@ -466,6 +523,27 @@ public class MainClock extends DigitalClockWidget {
                 //Add it to the list
                 slpt_objects.add(secondsLayout);
             }
+
+            // AM-PM (ONLY FOR 12h format)
+            SlptLinearLayout ampm = new SlptLinearLayout();
+            SlptPictureView am = new SlptPictureView();
+            SlptPictureView pm = new SlptPictureView();
+            am.setStringPicture("AM");
+            pm.setStringPicture("PM");
+            SlptSportUtil.setAmBgView(am);
+            SlptSportUtil.setPmBgView(pm);
+            ampm.add(am);
+            ampm.add(pm);
+            ampm.setTextAttrForAll(settings.am_pmFontSize, settings.am_pmColor, ResourceManager.getTypeFace(service.getResources(), settings.font));
+            ampm.alignX = 2;
+            ampm.alignY = 0;
+            tmp_left = (int) this.settings.am_pmLeft;
+            if (!this.settings.am_pmAlignLeft) {
+                ampm.setRect((tmp_left * 2) + 640, (int) this.settings.am_pmFontSize);
+                tmp_left = -320;
+            }
+            ampm.setStart(tmp_left, (int) (this.settings.am_pmTop - ((settings.font_ratio / 100.0f) * this.settings.am_pmFontSize)));
+            slpt_objects.add(ampm);
         }
 
         if(settings.analog_clock) {
@@ -485,7 +563,7 @@ public class MainClock extends DigitalClockWidget {
 
             if(settings.secondsBool){
                 SlptAnalogSecondView slptAnalogSecondView = new SlptAnalogSecondView();
-                slptAnalogSecondView.setImagePicture(SimpleFile.readFileFromAssets(service, "timehand/8c/second"+ ((settings.isVerge())?"_verge":"") +".png"));
+                slptAnalogSecondView.setImagePicture(SimpleFile.readFileFromAssets(service, "timehand/8c/seconds"+ ((settings.isVerge())?"_verge":"") +".png"));
                 slptAnalogSecondView.alignX = (byte) 2;
                 slptAnalogSecondView.alignY = (byte) 2;
                 slptAnalogSecondView.setRect(320 + (settings.isVerge()?40:0), 320 + (settings.isVerge()?40:0));
@@ -493,12 +571,16 @@ public class MainClock extends DigitalClockWidget {
             }
         }
 
+        // Only CLOCK?
+        if (!show_all)
+            return slpt_objects;
+
         // Draw DATE (30.12.2018)
-        if(settings.date>0 && show_all){
+        if(settings.date>0){
             // Show or Not icon
             if (settings.dateIcon) {
                 SlptPictureView dateIcon = new SlptPictureView();
-                dateIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"26wc_":"slpt_" )+"icons/date.png") );
+                dateIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"26wc_":"slpt_" )+"icons/"+settings.is_white_bg+"date.png") );
                 dateIcon.setStart(
                         (int) settings.dateIconLeft,
                         (int) settings.dateIconTop
@@ -548,7 +630,7 @@ public class MainClock extends DigitalClockWidget {
         }
 
         // Draw day of month
-        if(settings.dayBool && show_all){
+        if(settings.dayBool){
             SlptLinearLayout dayLayout = new SlptLinearLayout();
             dayLayout.add(new SlptDayHView());
             dayLayout.add(new SlptDayLView());
@@ -577,7 +659,7 @@ public class MainClock extends DigitalClockWidget {
         }
 
         // Draw month
-        if(settings.monthBool && show_all){
+        if(settings.monthBool){
             // JAVA calendar get/show time library
             Calendar calendar = Calendar.getInstance();
             int month = calendar.get(Calendar.MONTH);
@@ -638,7 +720,7 @@ public class MainClock extends DigitalClockWidget {
         }
 
         // Draw year number
-        if(settings.yearBool && show_all){
+        if(settings.yearBool){
             SlptLinearLayout yearLayout = new SlptLinearLayout();
             yearLayout.add(new SlptYear3View());
             yearLayout.add(new SlptYear2View());
@@ -670,10 +752,10 @@ public class MainClock extends DigitalClockWidget {
         }
 
         // Set day name font
-        Typeface weekfont = ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE);
+        Typeface weekfont = ResourceManager.getTypeFace(service.getResources(), settings.font);
 
         // Draw day name
-        if(settings.weekdayBool && show_all){
+        if(settings.weekdayBool){
             SlptLinearLayout WeekdayLayout = new SlptLinearLayout();
             WeekdayLayout.add(new SlptWeekView());
             if(settings.three_letters_day_if_text){

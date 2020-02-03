@@ -4,8 +4,6 @@ import android.app.Service;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
-import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.provider.Settings;
 import android.text.TextPaint;
 import android.util.Log;
@@ -15,10 +13,8 @@ import com.huami.watch.watchface.util.Util;
 import com.ingenic.iwds.slpt.view.core.SlptLinearLayout;
 import com.ingenic.iwds.slpt.view.core.SlptPictureView;
 import com.ingenic.iwds.slpt.view.core.SlptViewComponent;
-import com.ingenic.iwds.slpt.view.sport.SlptTodayFloorNumView;
 import com.ingenic.iwds.slpt.view.utils.SimpleFile;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
@@ -29,7 +25,6 @@ import java.util.List;
 import com.dinodevs.greatfitwatchface.data.DataType;
 import com.dinodevs.greatfitwatchface.data.WeatherData;
 import com.dinodevs.greatfitwatchface.resource.ResourceManager;
-import com.dinodevs.greatfitwatchface.R;
 
 
 public class WeatherWidget extends AbstractWidget {
@@ -45,6 +40,7 @@ public class WeatherWidget extends AbstractWidget {
     private TextPaint wind_directionPaint;
     private TextPaint wind_strengthPaint;
     private TextPaint weather_imgPaint;
+    private TextPaint min_max_temperaturesPaint;
 
     private Bitmap temperatureIcon;
     private Bitmap cityIcon;
@@ -52,8 +48,12 @@ public class WeatherWidget extends AbstractWidget {
     private Bitmap uvIcon;
     private Bitmap wind_directionIcon;
     private Bitmap wind_strengthIcon;
+    private Bitmap min_max_temperaturesIcon;
 
     private LoadSettings settings;
+    private final static  String TAG = "DinoDevs-GreatFit";
+
+
 
     // Constructor
     public WeatherWidget(LoadSettings settings) {
@@ -97,11 +97,11 @@ public class WeatherWidget extends AbstractWidget {
         if(settings.temperature>0) {
             this.temperaturePaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
             this.temperaturePaint.setColor(settings.temperatureColor);
-            this.temperaturePaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE));
+            this.temperaturePaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
             this.temperaturePaint.setTextSize(settings.temperatureFontSize);
             this.temperaturePaint.setTextAlign((settings.temperatureAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER);
             if(settings.temperatureIcon){
-                this.temperatureIcon = Util.decodeImage(service.getResources(),"icons/temperature.png");
+                this.temperatureIcon = Util.decodeImage(service.getResources(),"icons/"+settings.is_white_bg+"temperature.png");
             }
         }
 
@@ -109,11 +109,11 @@ public class WeatherWidget extends AbstractWidget {
         if(settings.city>0) {
             this.cityPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
             this.cityPaint.setColor(settings.cityColor);
-            this.cityPaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE));
+            this.cityPaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
             this.cityPaint.setTextSize(settings.cityFontSize);
             this.cityPaint.setTextAlign((settings.cityAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER);
             if(settings.cityIcon){
-                this.cityIcon = Util.decodeImage(service.getResources(),"icons/city.png");
+                this.cityIcon = Util.decodeImage(service.getResources(),"icons/"+settings.is_white_bg+"city.png");
             }
         }
 
@@ -121,11 +121,11 @@ public class WeatherWidget extends AbstractWidget {
         if(settings.humidity>0) {
             this.humidityPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
             this.humidityPaint.setColor(settings.humidityColor);
-            this.humidityPaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE));
+            this.humidityPaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
             this.humidityPaint.setTextSize(settings.humidityFontSize);
             this.humidityPaint.setTextAlign((settings.humidityAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER);
             if(settings.humidityIcon){
-                this.humidityIcon = Util.decodeImage(service.getResources(),"icons/humidity.png");
+                this.humidityIcon = Util.decodeImage(service.getResources(),"icons/"+settings.is_white_bg+"humidity.png");
             }
         }
 
@@ -133,11 +133,11 @@ public class WeatherWidget extends AbstractWidget {
         if(settings.uv>0) {
             this.uvPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
             this.uvPaint.setColor(settings.uvColor);
-            this.uvPaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE));
+            this.uvPaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
             this.uvPaint.setTextSize(settings.uvFontSize);
             this.uvPaint.setTextAlign((settings.uvAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER);
             if(settings.uvIcon){
-                this.uvIcon = Util.decodeImage(service.getResources(),"icons/uv.png");
+                this.uvIcon = Util.decodeImage(service.getResources(),"icons/"+settings.is_white_bg+"uv.png");
             }
         }
 
@@ -145,11 +145,11 @@ public class WeatherWidget extends AbstractWidget {
         if(settings.wind_direction>0) {
             this.wind_directionPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
             this.wind_directionPaint.setColor(settings.wind_directionColor);
-            this.wind_directionPaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE));
+            this.wind_directionPaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
             this.wind_directionPaint.setTextSize(settings.wind_directionFontSize);
             this.wind_directionPaint.setTextAlign((settings.wind_directionAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER);
             if(settings.wind_directionIcon){
-                this.wind_directionIcon = Util.decodeImage(service.getResources(),"icons/wind_direction.png");
+                this.wind_directionIcon = Util.decodeImage(service.getResources(),"icons/"+settings.is_white_bg+"wind_direction.png");
             }
         }
 
@@ -157,11 +157,11 @@ public class WeatherWidget extends AbstractWidget {
         if(settings.wind_strength>0) {
             this.wind_strengthPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
             this.wind_strengthPaint.setColor(settings.wind_strengthColor);
-            this.wind_strengthPaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE));
+            this.wind_strengthPaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
             this.wind_strengthPaint.setTextSize(settings.wind_strengthFontSize);
             this.wind_strengthPaint.setTextAlign((settings.wind_strengthAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER);
             if(settings.wind_strengthIcon){
-                this.wind_strengthIcon = Util.decodeImage(service.getResources(),"icons/wind_strength.png");
+                this.wind_strengthIcon = Util.decodeImage(service.getResources(),"icons/"+settings.is_white_bg+"wind_strength.png");
             }
         }
 
@@ -169,12 +169,24 @@ public class WeatherWidget extends AbstractWidget {
         if(settings.weather_img>0) {
             // Get weather data
             this.weather = getSlptWeather();
-            this.weatherImageIcon = Util.decodeImage(service.getResources(),"weather/"+this.weatherImageStrList.get(22)+".png");
+            this.weatherImageIcon = Util.decodeImage(service.getResources(),"weather/"+settings.is_white_bg+this.weatherImageStrList.get(22)+".png");
             this.weather_imgPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
             this.weather_imgPaint.setColor(settings.weather_imgColor);
-            this.weather_imgPaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE));
+            this.weather_imgPaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
             this.weather_imgPaint.setTextSize(settings.weather_imgFontSize);
             this.weather_imgPaint.setTextAlign((settings.weather_imgAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER);
+        }
+
+        // min max temperatures
+        if(settings.min_max_temperatures>0) {
+            this.min_max_temperaturesPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
+            this.min_max_temperaturesPaint.setColor(settings.min_max_temperaturesColor);
+            this.min_max_temperaturesPaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
+            this.min_max_temperaturesPaint.setTextSize(settings.min_max_temperaturesFontSize);
+            this.min_max_temperaturesPaint.setTextAlign((settings.min_max_temperaturesAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER);
+            if (settings.min_max_temperaturesIcon) {
+                this.min_max_temperaturesIcon = Util.decodeImage(service.getResources(), "icons/" + settings.is_white_bg + "min_max_temperatures.png");
+            }
         }
     }
 
@@ -194,7 +206,7 @@ public class WeatherWidget extends AbstractWidget {
         // Get ALL weather data
         this.weather = getSlptWeather();
 
-        this.weatherImageIcon = Util.decodeImage(mService.getResources(),"weather/"+this.weatherImageStrList.get(this.weather.weatherType)+".png");
+        this.weatherImageIcon = Util.decodeImage(mService.getResources(),"weather/"+settings.is_white_bg+this.weatherImageStrList.get(this.weather.weatherType)+".png");
     }
 
     // Screen on
@@ -252,11 +264,20 @@ public class WeatherWidget extends AbstractWidget {
 
         // Draw Weather icon
         if(settings.weather_img>0) {
-            canvas.drawBitmap(this.weatherImageIcon, settings.weather_imgIconLeft, settings.weather_imgIconTop, settings.mGPaint);
+            // the icons are 3px larger in width than other icons, thus -2 to calibrate it a little
+            canvas.drawBitmap(this.weatherImageIcon, settings.weather_imgIconLeft-2, settings.weather_imgIconTop-2, settings.mGPaint);
             if(settings.weather_imgIcon) {//In the weather image widget, if icon is disabled, temperature is not shown!
                 String units = (settings.weather_imgUnits) ? weather.getUnits() : ""; //"ºC"
                 canvas.drawText(weather.getTemperature() + units, settings.weather_imgLeft, settings.weather_imgTop, weather_imgPaint);
             }
+        }
+
+        // Draw min max temperatures
+        if(settings.min_max_temperatures>0) {
+            if(settings.min_max_temperaturesIcon){
+                canvas.drawBitmap(this.min_max_temperaturesIcon, settings.min_max_temperaturesIconLeft, settings.min_max_temperaturesIconTop, settings.mGPaint);
+            }
+            canvas.drawText(weather.tempFormatted, settings.min_max_temperaturesLeft, settings.min_max_temperaturesTop, min_max_temperaturesPaint);
         }
     }
 
@@ -266,16 +287,11 @@ public class WeatherWidget extends AbstractWidget {
     public WeatherData getSlptWeather() {
         // Default variables
         String tempUnit = "1";
-        String temp = "n/a";
         int weatherType = 22;
-        String city = "n/a";
-        String humidity = "n/a";
-        String uv = "n/a";
-        String windDirection = "n/a";
-        String windStrength = "n/a";
-
-        // Get ALL data from system
-        String str = Settings.System.getString(this.mService.getApplicationContext().getContentResolver(), "WeatherInfo");
+        String temp, city, humidity, uv, windDirection, windStrength;
+        temp = city = humidity = uv = windDirection = windStrength = "n/a";
+        String tempMax, tempMin, tempFormatted;
+        tempMax = tempMin = tempFormatted = "-/-";
 
         // WeatherInfo
         // {"isAlert":true, "isNotification":true, "tempFormatted":"28ºC",
@@ -284,34 +300,52 @@ public class WeatherWidget extends AbstractWidget {
         // "pm25":-1, "sd":"50%", //(Humidity)
         // "temp":28, "time":1531292274457, "uv":"Strong",
         // "weather":0, "windDirection":"NW", "windStrength":"7.4km/h"}
-
         // WeatherCheckedSummary
         // {"tempUnit":"1","temp":"31\/21","weatherCodeFrom":0}
 
-        // Extract data from JSON
-        JSONObject weather_data;
         try {
-            weather_data = new JSONObject(str);
-            tempUnit = weather_data.getString("tempUnit");
-            temp = weather_data.getString("temp");
+            // Get ALL data from system
+            String str = Settings.System.getString(this.mService.getApplicationContext().getContentResolver(), "WeatherInfo");
+
+            // Extract data from JSON
+            JSONObject weather_data = new JSONObject(str);
+
             //weatherType = weather_data.getInt("weatherCodeFrom");
-            weatherType = weather_data.getInt("weatherCode");
-            city = weather_data.getString("city");
-            humidity = weather_data.getString("sd");
-            uv = weather_data.getString("uv");
-            windDirection = weather_data.getString("windDirection");
-            windStrength = weather_data.getString("windStrength");
+
+            if (weather_data.has("tempUnit"))
+                tempUnit = weather_data.getString("tempUnit");
+            if (weather_data.has("temp"))
+                temp = weather_data.getString("temp");
+            if (weather_data.has("weatherCode"))
+                weatherType = weather_data.getInt("weatherCode");
+            if (weather_data.has("city"))
+                city = weather_data.getString("city");
+            if (weather_data.has("sd"))
+                humidity = weather_data.getString("sd");
+            if (weather_data.has("uv"))
+                uv = weather_data.getString("uv");
+            if (weather_data.has("windDirection"))
+                windDirection = weather_data.getString("windDirection");
+            if (weather_data.has("windStrength"))
+                windStrength = weather_data.getString("windStrength");
+
+            JSONObject weather_forecast = (JSONObject) weather_data.getJSONArray("forecasts").get(0);
+            if (weather_forecast.has("tempMax"))
+                tempMax = weather_forecast.getString("tempMax");
+            if (weather_forecast.has("tempMin"))
+                tempMin = weather_forecast.getString("tempMin");
+            if (weather_forecast.has("tempFormatted"))
+                tempFormatted = weather_forecast.getString("tempFormatted");
         }
-        catch (JSONException e) {
-          // Nothing
+        catch (Exception e) {
+            Log.e( TAG, "Weather-widget getSlptWeather: "+ e.getMessage() );
         }
 
         // Unknown weather
-        if(weatherType<0 || weatherType>22){
+        if(weatherType<0 || weatherType>22)
             return new WeatherData("1", "n/a", 22);
-        }
-
-        return new WeatherData(tempUnit, temp, weatherType, city, humidity, uv, windDirection, windStrength);
+        // Normal
+        return new WeatherData(tempUnit, temp, weatherType, city, humidity, uv, windDirection, windStrength, tempMax, tempMin, tempFormatted);
     }
 
     // Screen-off (SLPT)
@@ -340,7 +374,7 @@ public class WeatherWidget extends AbstractWidget {
             // Show or Not icon
             if (settings.temperatureIcon) {
                 SlptPictureView temperatureIcon = new SlptPictureView();
-                temperatureIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"":"slpt_" )+"icons/temperature.png") );
+                temperatureIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"":"slpt_" )+"icons/"+settings.is_white_bg+"temperature.png") );
                 temperatureIcon.setStart(
                         (int) settings.temperatureIconLeft,
                         (int) settings.temperatureIconTop
@@ -355,7 +389,7 @@ public class WeatherWidget extends AbstractWidget {
             temperatureNum.setTextAttr(
                     settings.temperatureFontSize,
                     settings.temperatureColor,
-                    ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE)
+                    ResourceManager.getTypeFace(service.getResources(), settings.font)
             );
             temperatureLayout.add(temperatureNum);
             // Position based on screen on
@@ -380,10 +414,10 @@ public class WeatherWidget extends AbstractWidget {
         // Weather Icons
         if(settings.weather_img>0){
             SlptPictureView weatherIcon = new SlptPictureView();
-            weatherIcon.setImagePicture( SimpleFile.readFileFromAssets(service, String.format(( (better_resolution)?"26wc_":"slpt_" )+"weather/%s.png", this.weatherImageStrList.get(this.weather.weatherType))) );
+            weatherIcon.setImagePicture( SimpleFile.readFileFromAssets(service, String.format(( (better_resolution)?"26wc_":"slpt_" )+"weather/%s.png", settings.is_white_bg+this.weatherImageStrList.get(this.weather.weatherType))) );
             weatherIcon.setStart(
-                    (int) settings.weather_imgIconLeft,
-                    (int) settings.weather_imgIconTop
+                    (int) settings.weather_imgIconLeft-2,    // the icons are 3px larger in width than other
+                    (int) settings.weather_imgIconTop-2     // icons, thus -2 to calibrate it a little
             );
             slpt_objects.add(weatherIcon);
 
@@ -395,7 +429,7 @@ public class WeatherWidget extends AbstractWidget {
                 weather_imgNum.setTextAttr(
                         settings.weather_imgFontSize,
                         settings.weather_imgColor,
-                        ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE)
+                        ResourceManager.getTypeFace(service.getResources(), settings.font)
                 );
                 weatherLayout.add(weather_imgNum);
                 // Position based on screen on
@@ -423,7 +457,7 @@ public class WeatherWidget extends AbstractWidget {
             // Show or Not icon
             if (settings.cityIcon) {
                 SlptPictureView cityIcon = new SlptPictureView();
-                cityIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"26wc_":"slpt_" )+"icons/city.png") );
+                cityIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"26wc_":"slpt_" )+"icons/"+settings.is_white_bg+"city.png") );
                 cityIcon.setStart(
                         (int) settings.cityIconLeft,
                         (int) settings.cityIconTop
@@ -437,13 +471,13 @@ public class WeatherWidget extends AbstractWidget {
             cityText.setTextAttr(
                     settings.cityFontSize,
                     settings.cityColor,
-                    ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE)
+                    ResourceManager.getTypeFace(service.getResources(), settings.font)
             );
             cityLayout.add(cityText);
             cityLayout.setTextAttrForAll(
                     settings.cityFontSize,
                     settings.cityColor,
-                    ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE)
+                    ResourceManager.getTypeFace(service.getResources(), settings.font)
             );
             // Position based on screen on
             cityLayout.alignX = 2;
@@ -469,7 +503,7 @@ public class WeatherWidget extends AbstractWidget {
             // Show or Not icon
             if (settings.humidityIcon) {
                 SlptPictureView humidityIcon = new SlptPictureView();
-                humidityIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"26wc_":"slpt_" )+"icons/humidity.png") );
+                humidityIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"26wc_":"slpt_" )+"icons/"+settings.is_white_bg+"humidity.png") );
                 humidityIcon.setStart(
                         (int) settings.humidityIconLeft,
                         (int) settings.humidityIconTop
@@ -483,13 +517,13 @@ public class WeatherWidget extends AbstractWidget {
             humidityNum.setTextAttr(
                     settings.humidityFontSize,
                     settings.humidityColor,
-                    ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE)
+                    ResourceManager.getTypeFace(service.getResources(), settings.font)
             );
             humidityLayout.add(humidityNum);
             humidityLayout.setTextAttrForAll(
                     settings.humidityFontSize,
                     settings.humidityColor,
-                    ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE)
+                    ResourceManager.getTypeFace(service.getResources(), settings.font)
             );
             // Position based on screen on
             humidityLayout.alignX = 2;
@@ -515,7 +549,7 @@ public class WeatherWidget extends AbstractWidget {
             // Show or Not icon
             if (settings.uvIcon) {
                 SlptPictureView uvIcon = new SlptPictureView();
-                uvIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"26wc_":"slpt_" )+"icons/uv.png") );
+                uvIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"26wc_":"slpt_" )+"icons/"+settings.is_white_bg+"uv.png") );
                 uvIcon.setStart(
                         (int) settings.uvIconLeft,
                         (int) settings.uvIconTop
@@ -529,13 +563,13 @@ public class WeatherWidget extends AbstractWidget {
             uvNum.setTextAttr(
                     settings.uvFontSize,
                     settings.uvColor,
-                    ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE)
+                    ResourceManager.getTypeFace(service.getResources(), settings.font)
             );
             uvLayout.add(uvNum);
             uvLayout.setTextAttrForAll(
                     settings.uvFontSize,
                     settings.uvColor,
-                    ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE)
+                    ResourceManager.getTypeFace(service.getResources(), settings.font)
             );
             // Position based on screen on
             uvLayout.alignX = 2;
@@ -561,7 +595,7 @@ public class WeatherWidget extends AbstractWidget {
             // Show or Not icon
             if (settings.wind_directionIcon) {
                 SlptPictureView wind_directionIcon = new SlptPictureView();
-                wind_directionIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"26wc_":"slpt_" )+"icons/wind_direction.png") );
+                wind_directionIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"26wc_":"slpt_" )+"icons/"+settings.is_white_bg+"wind_direction.png") );
                 wind_directionIcon.setStart(
                         (int) settings.wind_directionIconLeft,
                         (int) settings.wind_directionIconTop
@@ -575,13 +609,13 @@ public class WeatherWidget extends AbstractWidget {
             wind_directionText.setTextAttr(
                     settings.wind_directionFontSize,
                     settings.wind_directionColor,
-                    ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE)
+                    ResourceManager.getTypeFace(service.getResources(), settings.font)
             );
             wind_directionLayout.add(wind_directionText);
             wind_directionLayout.setTextAttrForAll(
                     settings.wind_directionFontSize,
                     settings.wind_directionColor,
-                    ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE)
+                    ResourceManager.getTypeFace(service.getResources(), settings.font)
             );
             // Position based on screen on
             wind_directionLayout.alignX = 2;
@@ -607,7 +641,7 @@ public class WeatherWidget extends AbstractWidget {
             // Show or Not icon
             if (settings.wind_strengthIcon) {
                 SlptPictureView wind_strengthIcon = new SlptPictureView();
-                wind_strengthIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"26wc_":"slpt_" )+"icons/wind_strength.png") );
+                wind_strengthIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"26wc_":"slpt_" )+"icons/"+settings.is_white_bg+"wind_strength.png") );
                 wind_strengthIcon.setStart(
                         (int) settings.wind_strengthIconLeft,
                         (int) settings.wind_strengthIconTop
@@ -620,13 +654,13 @@ public class WeatherWidget extends AbstractWidget {
             wind_strengthText.setTextAttr(
                     settings.wind_strengthFontSize,
                     settings.wind_strengthColor,
-                    ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE)
+                    ResourceManager.getTypeFace(service.getResources(), settings.font)
             );
             wind_strengthLayout.add(wind_strengthText);
             wind_strengthLayout.setTextAttrForAll(
                     settings.wind_strengthFontSize,
                     settings.wind_strengthColor,
-                    ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE)
+                    ResourceManager.getTypeFace(service.getResources(), settings.font)
             );
             // Position based on screen on
             wind_strengthLayout.alignX = 2;
@@ -645,6 +679,52 @@ public class WeatherWidget extends AbstractWidget {
                     (int) (settings.wind_strengthTop-((float)settings.font_ratio/100)*settings.wind_strengthFontSize)
             );
             slpt_objects.add(wind_strengthLayout);
+        }
+
+
+        // Draw min max temperatures (ex. 17/20 C)
+        if(settings.min_max_temperatures>0){
+            // Show or Not icon
+            if (settings.min_max_temperaturesIcon) {
+                SlptPictureView min_max_temperaturesIcon = new SlptPictureView();
+                min_max_temperaturesIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"26wc_":"slpt_" )+"icons/"+settings.is_white_bg+"min_max_temperatures.png") );
+                min_max_temperaturesIcon.setStart(
+                        (int) settings.min_max_temperaturesIconLeft,
+                        (int) settings.min_max_temperaturesIconTop
+                );
+                slpt_objects.add(min_max_temperaturesIcon);
+            }
+            SlptLinearLayout min_max_temperaturesLayout = new SlptLinearLayout();
+            SlptPictureView min_max_temperaturesText = new SlptPictureView();
+            min_max_temperaturesText.setStringPicture(this.weather.tempFormatted);
+            min_max_temperaturesText.setTextAttr(
+                    settings.min_max_temperaturesFontSize,
+                    settings.min_max_temperaturesColor,
+                    ResourceManager.getTypeFace(service.getResources(), settings.font)
+            );
+            min_max_temperaturesLayout.add(min_max_temperaturesText);
+            min_max_temperaturesLayout.setTextAttrForAll(
+                    settings.min_max_temperaturesFontSize,
+                    settings.min_max_temperaturesColor,
+                    ResourceManager.getTypeFace(service.getResources(), settings.font)
+            );
+            // Position based on screen on
+            min_max_temperaturesLayout.alignX = 2;
+            min_max_temperaturesLayout.alignY = 0;
+            int tmp_left = (int) settings.min_max_temperaturesLeft;
+            if(!settings.min_max_temperaturesAlignLeft) {
+                // If text is centered, set rectangle
+                min_max_temperaturesLayout.setRect(
+                        (int) (2 * tmp_left + 640),
+                        (int) (((float)settings.font_ratio/100)*settings.min_max_temperaturesFontSize)
+                );
+                tmp_left = -320;
+            }
+            min_max_temperaturesLayout.setStart(
+                    (int) tmp_left,
+                    (int) (settings.min_max_temperaturesTop-((float)settings.font_ratio/100)*settings.min_max_temperaturesFontSize)
+            );
+            slpt_objects.add(min_max_temperaturesLayout);
         }
 
         return slpt_objects;

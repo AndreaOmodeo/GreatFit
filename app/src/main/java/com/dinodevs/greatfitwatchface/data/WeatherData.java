@@ -10,6 +10,10 @@ public class WeatherData {
     public String windDirection = "n/a";
     public String windStrength = "n/a";
     public String windArrow = "•";
+    public String tempMax="-";
+    public String tempMin="-";
+    public String tempFormatted="-/-";
+
 
     public WeatherData(String tempFlag, String tempString, int weatherType) {
         this.tempFlag = tempFlag;
@@ -17,7 +21,7 @@ public class WeatherData {
         this.weatherType = weatherType;
     }
 
-    public WeatherData(String tempFlag, String tempString, int weatherType, String tempCity, String tempHumidity, String tempUV, String tempWindDirection, String tempWindStrength) {
+    public WeatherData(String tempFlag, String tempString, int weatherType, String tempCity, String tempHumidity, String tempUV, String tempWindDirection, String tempWindStrength, String tempMax, String tempMin, String tempFormatted) {
         this.tempFlag = tempFlag;
         this.tempString = tempString;
         this.weatherType = weatherType;
@@ -27,6 +31,10 @@ public class WeatherData {
         this.windDirection = tempWindDirection;
         this.windStrength = tempWindStrength;
         this.windArrow = getWindDirectionArrow();
+        this.tempMax = tempMax;
+        this.tempMin = tempMin;
+        this.tempFormatted = tempFormatted;
+        getTempFormatted();
     }
 
     public String toString() {
@@ -97,5 +105,52 @@ public class WeatherData {
             return "n/a";
         }
         return this.tempString;
+    }
+
+    public int getTemperatureValueCelsius() {
+        int num = 15; // Default: an average temperature (ºC)
+        if(this.tempString.isEmpty() || this.weatherType==22 || this.tempString.equals("0/0")){
+            return num;
+        }else{
+            try {// Convert from float to int
+                num = (int) Float.parseFloat(this.tempString);
+            } catch (Exception e) {
+                // error in the conversion
+                return num;
+            }
+        }
+
+        if (!this.tempFlag.equals("1") && !this.tempFlag.equals("C")){
+            // Fahrenheit to Celsius
+            num = (num - 32) * 5/9;
+        }
+
+        return num;
+    }
+
+    private String getTempMax() {
+        if (this.tempMax.isEmpty()) {
+            return "-";
+        }
+        return this.tempMax;
+    }
+
+    private String getTempMin() {
+        if (this.tempMin.isEmpty()) {
+            return "-";
+        }
+        return this.tempMin;
+    }
+
+    private void getTempFormatted() {
+        this.tempFormatted = getTempWithoutDot(getTempMax())+"/"+getTempWithoutDot(getTempMin())+getUnits();
+    }
+
+    private String getTempWithoutDot(String string) {
+        int indx = string.lastIndexOf(46);
+        if (indx != -1) {
+            return string.substring(0, indx);
+        }
+        return string;
     }
 }

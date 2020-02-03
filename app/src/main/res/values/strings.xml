@@ -9,6 +9,8 @@
     <string name="reset">Reset</string>
     <string name="main_color">Main color</string>
     <string name="main_color_c">Select watchface color</string>
+    <string name="font">Font</string>
+    <string name="font_c">Select font</string>
     <string name="other_features">Other features</string>
     <string name="other_features_c">Enable/Disable special features</string>
     <string name="widget">Widget</string>
@@ -23,6 +25,7 @@
     <string name="set_elements">Set widget</string>
     <string name="set_progress_bar">Set bar</string>
     <string name="set_color">Set color</string>
+    <string name="set_font">Set font</string>
     <string name="set_language">Set language</string>
 
     <string name="moreBattery">Will use more battery</string>
@@ -31,6 +34,7 @@
     <string name="emptyWidget">Leave widget position empty</string>
     <string name="totalSportDistance">Total distance in sports</string>
     <string name="todaySportDistance">Today distance in sports</string>
+    <string name="basedOnHeight">Calculated based on height</string>
     <string name="needsContinueHeartRate">Needs continue heart rate ON</string>
     <string name="dateFormat">Show date as dd.mm.yyyy</string>
     <string name="nextWatchAlarm">Next watch\'s alarm (Day-Time)</string>
@@ -81,6 +85,7 @@
     <string name="Chinese">中文</string>
     <string name="Croatian">Hrvatski</string>
     <string name="Czech">Czech</string>
+    <string name="Danish">Dansk</string>
     <string name="Dutch">Nederlands</string>
     <string name="French">Français</string>
     <string name="German">Deutsch</string>
@@ -98,4 +103,5 @@
     <string name="Spanish">Español</string>
     <string name="Thai">ไทย</string>
     <string name="Turkish">Türkçe</string>
+    <string name="Vietnamese">Tiếng Việt</string>
 </resources>

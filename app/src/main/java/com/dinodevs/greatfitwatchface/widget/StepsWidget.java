@@ -54,13 +54,13 @@ public class StepsWidget extends AbstractWidget {
 
         if(settings.steps>0){
             this.stepsPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            this.stepsPaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE));
+            this.stepsPaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
             this.stepsPaint.setTextSize(settings.stepsFontSize);
             this.stepsPaint.setColor(settings.stepsColor);
             this.stepsPaint.setTextAlign( (settings.stepsAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER );
 
             if(settings.stepsIcon){
-                this.icon = Util.decodeImage(mService.getResources(),"icons/steps.png");
+                this.icon = Util.decodeImage(mService.getResources(),"icons/"+settings.is_white_bg+"steps.png");
             }
         }
 
@@ -145,7 +145,7 @@ public class StepsWidget extends AbstractWidget {
             // Show or Not icon
             if (settings.stepsIcon) {
                 SlptPictureView stepsIcon = new SlptPictureView();
-                stepsIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"26wc_":"slpt_" )+"icons/steps.png") );
+                stepsIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"26wc_":"slpt_" )+"icons/"+settings.is_white_bg+"steps.png") );
                 stepsIcon.setStart(
                         (int) settings.stepsIconLeft,
                         (int) settings.stepsIconTop
@@ -158,7 +158,7 @@ public class StepsWidget extends AbstractWidget {
             steps.setTextAttrForAll(
                     settings.stepsFontSize,
                     settings.stepsColor,
-                    ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE)
+                    ResourceManager.getTypeFace(service.getResources(), settings.font)
             );
             // Position based on screen on
             steps.alignX = 2;

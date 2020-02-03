@@ -48,13 +48,13 @@ public class SportTodayDistanceWidget extends AbstractWidget {
         
         if(settings.today_distance>0){
             this.today_distancePaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-            this.today_distancePaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE));
+            this.today_distancePaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
             this.today_distancePaint.setTextSize(settings.today_distanceFontSize);
             this.today_distancePaint.setColor(settings.today_distanceColor);
             this.today_distancePaint.setTextAlign( (settings.today_distanceAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER );
 
             if(settings.today_distanceIcon){
-                this.today_distanceIcon = Util.decodeImage(service.getResources(),"icons/today_distance.png");
+                this.today_distanceIcon = Util.decodeImage(service.getResources(),"icons/"+settings.is_white_bg+"today_distance.png");
             }
         }
 
@@ -139,7 +139,7 @@ public class SportTodayDistanceWidget extends AbstractWidget {
             // Show or Not icon
             if (settings.today_distanceIcon) {
                 SlptPictureView today_distanceIcon = new SlptPictureView();
-                today_distanceIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"26wc_":"slpt_" )+"icons/today_distance.png") );
+                today_distanceIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"26wc_":"slpt_" )+"icons/"+settings.is_white_bg+"today_distance.png") );
                 today_distanceIcon.setStart(
                         (int) settings.today_distanceIconLeft,
                         (int) settings.today_distanceIconTop
@@ -163,7 +163,7 @@ public class SportTodayDistanceWidget extends AbstractWidget {
             distance.setTextAttrForAll(
                     settings.today_distanceFontSize,
                     settings.today_distanceColor,
-                    ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE)
+                    ResourceManager.getTypeFace(service.getResources(), settings.font)
             );
             // Position based on screen on
             distance.alignX = 2;

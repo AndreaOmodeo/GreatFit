@@ -69,13 +69,13 @@ public class HeartRateWidget extends AbstractWidget {
 
         this.textPaint = new TextPaint(TextPaint.ANTI_ALIAS_FLAG);
         this.textPaint.setColor(settings.heart_rateColor);
-        this.textPaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE));
+        this.textPaint.setTypeface(ResourceManager.getTypeFace(service.getResources(), settings.font));
         this.textPaint.setTextSize(settings.heart_rateFontSize);
         this.textPaint.setTextAlign( (settings.heart_rateAlignLeft) ? Paint.Align.LEFT : Paint.Align.CENTER );
 
         if(settings.heart_rateIcon){
-            this.heart_rateIcon = Util.decodeImage(service.getResources(),"icons/heart_rate.png");
-            this.heart_rate_flashingIcon = Util.decodeImage(service.getResources(),"icons/heart_rate_flashing.png");
+            this.heart_rateIcon = Util.decodeImage(service.getResources(),"icons/"+settings.is_white_bg+"heart_rate.png");
+            this.heart_rate_flashingIcon = Util.decodeImage(service.getResources(),"icons/"+settings.is_white_bg+"heart_rate_flashing.png");
         }
         
         // Progress Bar Circle
@@ -212,7 +212,7 @@ public class HeartRateWidget extends AbstractWidget {
             // Show or Not icon
             if (settings.heart_rateIcon) {
                 SlptPictureView heart_rateIcon = new SlptPictureView();
-                heart_rateIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"26wc_":"slpt_" )+"icons/heart_rate.png") );
+                heart_rateIcon.setImagePicture( SimpleFile.readFileFromAssets(service, ( (better_resolution)?"26wc_":"slpt_" )+"icons/"+settings.is_white_bg+"heart_rate.png") );
                 heart_rateIcon.setStart(
                         (int) settings.heart_rateIconLeft,
                         (int) settings.heart_rateIconTop
@@ -231,7 +231,7 @@ public class HeartRateWidget extends AbstractWidget {
             heart.setTextAttrForAll(
                     settings.heart_rateFontSize,
                     settings.heart_rateColor,
-                    ResourceManager.getTypeFace(service.getResources(), ResourceManager.Font.FONT_FILE)
+                    ResourceManager.getTypeFace(service.getResources(), settings.font)
             );
             // Position based on screen on
             heart.alignX = 2;
